@@ -72,3 +72,11 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# JetBrains IDE (Rider, CLion 등) 개인 설정 파일 및 캐시
+.idea/
+*.sln.iml
+cmake-build-*/
+
+# (선택 사항) VS Code를 사용하실 경우를 대비한 소음 차단
+.vscode/
