@@ -16,19 +16,19 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 public:
-	void SetChatNickname(const FString& NewNickname);
-	void SetIsMinigameParticipant(bool bNewValue);
-	void SetCanSendNormalChat(bool bNewValue);
-	void SetHasClearedCurrentGame(bool bNewValue);
-	void SetUsedTurnCount(int32 NewCount);
+	void SetChatNickname(const FString& NewNickname) {ChatNickname = NewNickname;}
+	void SetIsMinigameParticipant(bool bNewValue) {bIsMinigameParticipant = bNewValue;}
+	void SetCanSendNormalChat(bool bNewValue) {bCanSendNormalChat = bNewValue;}
+	void SetHasClearedCurrentGame(bool bNewValue) {bHasClearedCurrentGame = bNewValue;}
+	void SetUsedTurnCount(int32 NewCount) {UsedTurnCount = NewCount;}
 	void ResetMiniGamePlayerState();
 	
 public:
-	FString GetChatNickname() const;
-	bool IsMinigameParticipant() const;
-	bool CanSendNormalChat() const;
-	bool HasClearedCurrentGame() const;
-	int32 GetUsedTurnCount() const;
+	FString GetChatNickname() const {return ChatNickname;}
+	bool IsMinigameParticipant() const {return bIsMinigameParticipant;}
+	bool CanSendNormalChat() const {return bCanSendNormalChat;}
+	bool HasClearedCurrentGame() const {return bHasClearedCurrentGame;}
+	int32 GetUsedTurnCount() const {return UsedTurnCount;}
 	
 protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
