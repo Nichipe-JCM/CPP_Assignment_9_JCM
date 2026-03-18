@@ -25,4 +25,7 @@ protected:
 	
 	UFUNCTION()
 	void OnClickedConfirmedButton();
+	
+	UFUNCTION()
+	void OnNicknameTextCommitted(const FText& Text, ETextCommit::Type CommitMethod);
 };

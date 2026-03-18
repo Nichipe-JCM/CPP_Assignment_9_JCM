@@ -19,6 +19,9 @@ class CPP_ASSIGNMENT_9_JCM_API UGCChatRoomWidgetBase : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 	
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	
+	
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_RefreshChatMessages(const TArray<FChatMessageData>& InMessages);
@@ -41,4 +44,15 @@ protected:
 
 	UFUNCTION()
 	void OnClickedSendButton();
+	
+	UFUNCTION()
+	void OnChatInputTextCommitted(const FText& Text, ETextCommit::Type CommitMethod);
+	
+protected:
+	void RefreshFromGameState();
+	FString BuildRoomStatusText() const;
+	
+protected:
+	int32 CachedChatMessageCount = INDEX_NONE;
+	FString CachedRoomStatusText; 
 };
