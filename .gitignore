@@ -77,6 +77,7 @@ DerivedDataCache/*
 .idea/
 *.sln.iml
 cmake-build-*/
+*.DotSettings.user
 
 # (선택 사항) VS Code를 사용하실 경우를 대비한 소음 차단
 .vscode/
