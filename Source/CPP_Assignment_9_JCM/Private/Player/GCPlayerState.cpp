@@ -5,7 +5,7 @@
 
 AGCPlayerState::AGCPlayerState()
 {
-	ChatNickname = TEXT("Player");
+	ChatNickname = TEXT("");
 }
 
 void AGCPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

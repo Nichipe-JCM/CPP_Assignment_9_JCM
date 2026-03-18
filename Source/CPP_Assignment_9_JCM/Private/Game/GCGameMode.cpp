@@ -51,6 +51,13 @@ void AGCGameMode::Logout(AController* ExitingController)
 	AGCGameState* GCGameState = GetGameState<AGCGameState>();
 	if (IsValid(GCGameState))
 	{
+		if (GCGameState->GetCurrentRoomPhase() == ERoomPhase::SelectingGame && ExitingPS == GameSelectionStarter)
+		{
+			BroadcastSystemMessage(TEXT("게임 선택 중이던 플레이어가 퇴장하여 선택이 취소되었습니다."));
+			ResetRoomState();
+			return;
+		}
+
 		if (GCGameState->GetCurrentRoomPhase() == ERoomPhase::Playing && ActiveParticipants.Num() <= 0)
 		{
 			BroadcastSystemMessage(TEXT("게임이 종료되었습니다. (참가자 부족)"));
@@ -80,12 +87,69 @@ void AGCGameMode::HandleNicknameSubmit(AGCPlayerController* SenderPC, const FStr
 	
 	if (FinalNickname.IsEmpty())
 	{
-		FinalNickname = TEXT("Player");
+		FinalNickname = GenerateDefaultNickname();
+	}
+
+	if (IsNicknameAlreadyInUse(FinalNickname, SenderPS))
+	{
+		SenderPC->ClientHandleNicknameSubmitResult(false, TEXT("동일한 닉네임이 존재합니다"));
+		return;
 	}
 	
 	SenderPS->SetChatNickname(FinalNickname);
 	
 	BroadcastSystemMessage(FString::Printf(TEXT("%s 님이 입장했습니다."), *FinalNickname));
+	SenderPC->ClientHandleNicknameSubmitResult(true, TEXT(""));
+}
+
+bool AGCGameMode::IsNicknameAlreadyInUse(const FString& Nickname, const AGCPlayerState* RequestPlayerState) const
+{
+	const FString TrimmedNickname = Nickname.TrimStartAndEnd();
+	if (TrimmedNickname.IsEmpty())
+	{
+		return false;
+	}
+
+	const AGCGameState* GCGameState = GetGameState<AGCGameState>();
+	if (!IsValid(GCGameState))
+	{
+		return false;
+	}
+
+	for (APlayerState* PlayerStateBase : GCGameState->PlayerArray)
+	{
+		const AGCPlayerState* OtherPlayerState = Cast<AGCPlayerState>(PlayerStateBase);
+		if (!IsValid(OtherPlayerState) || OtherPlayerState == RequestPlayerState)
+		{
+			continue;
+		}
+
+		const FString OtherNickname = OtherPlayerState->GetChatNickname().TrimStartAndEnd();
+		if (OtherNickname.IsEmpty())
+		{
+			continue;
+		}
+
+		if (OtherNickname.Equals(TrimmedNickname, ESearchCase::IgnoreCase))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+FString AGCGameMode::GenerateDefaultNickname()
+{
+	while (true)
+	{
+		const FString CandidateNickname = FString::Printf(TEXT("플레이어%d"), NextDefaultNicknameNumber++);
+
+		if (!IsNicknameAlreadyInUse(CandidateNickname))
+		{
+			return CandidateNickname;
+		}
+	}
 }
 
 void AGCGameMode::HandleChatInput(AGCPlayerController* SenderPC, const FString& InputText)
@@ -138,6 +202,12 @@ void AGCGameMode::ProcessCommand(AGCPlayerController* SenderPC, const FString& C
 
 	if (CommandText.Equals(TEXT("!게임")))
 	{
+		if (CurrentPhase == ERoomPhase::SelectingGame)
+		{
+			SenderPC->ClientReceivePrivateTurnResult(TEXT("다른 플레이어가 현재 게임을 선택 중입니다."));
+			return;
+		}
+
 		if (CurrentPhase != ERoomPhase::Lobby)
 		{
 			SenderPC->ClientReceivePrivateTurnResult(TEXT("지금은 게임 선택을 시작할 수 없습니다."));
@@ -156,6 +226,12 @@ void AGCGameMode::ProcessCommand(AGCPlayerController* SenderPC, const FString& C
 			return;
 		}
 
+		if (!IsGameSelectionStarter(SenderPS))
+		{
+			SenderPC->ClientReceivePrivateTurnResult(TEXT("게임 선택을 시작한 플레이어만 워들을 선택할 수 있습니다."));
+			return;
+		}
+
 		SelectMiniGame(EMiniGameType::Wordle);
 		AddParticipant(SenderPS);
 		StartRecruitment();
@@ -169,6 +245,12 @@ void AGCGameMode::ProcessCommand(AGCPlayerController* SenderPC, const FString& C
 		if (CurrentPhase != ERoomPhase::SelectingGame)
 		{
 			SenderPC->ClientReceivePrivateTurnResult(TEXT("먼저 !게임 으로 게임 선택 상태로 들어가세요."));
+			return;
+		}
+
+		if (!IsGameSelectionStarter(SenderPS))
+		{
+			SenderPC->ClientReceivePrivateTurnResult(TEXT("게임 선택을 시작한 플레이어만 숫자야구를 선택할 수 있습니다."));
 			return;
 		}
 
@@ -251,6 +333,7 @@ void AGCGameMode::ResetRoomState()
 	CurrentTurnPlayerIndex = INDEX_NONE;
 	AnswerNumberString.Empty();
 	CurrentWordleAnswer.Empty();
+	GameSelectionStarter = nullptr;
 	
 	ClearParticipants();
 	
@@ -276,9 +359,10 @@ void AGCGameMode::StartGameSelection(AGCPlayerController* SenderPC)
 	if (!IsValid(GCGameState)) return;
 
 	GCGameState->SetCurrentRoomPhase(ERoomPhase::SelectingGame);
+	GameSelectionStarter = SenderPC->GetPlayerState<AGCPlayerState>();
 	SyncGameState();
 
-	BroadcastSystemMessage(TEXT("게임 선택을 시작합니다. !워들 또는 !숫자야구 를 입력하세요."));
+	SenderPC->ClientReceivePrivateTurnResult(TEXT("게임 선택을 시작합니다. !워들 또는 !숫자야구 를 입력하세요."));
 }
 
 void AGCGameMode::SelectMiniGame(EMiniGameType InGameType)
@@ -296,7 +380,7 @@ void AGCGameMode::StartRecruitment()
 	if (!IsValid(GCGameState)) return;
 
 	constexpr float RecruitDuration = 10.0f;
-	constexpr float RecruitUpdateInterval = 0.25f;
+	constexpr float RecruitUpdateInterval = 0.1f;
 
 	FRecruitInfo NewRecruitInfo;
 	NewRecruitInfo.TargetGame = GCGameState->GetCurrentMiniGameType();
@@ -636,7 +720,19 @@ void AGCGameMode::FinishRound()
 void AGCGameMode::EndCurrentGame(const FString& EndMessage)
 {
 	BroadcastSystemMessage(EndMessage);
+
+	const FString AnswerRevealMessage = BuildCurrentAnswerRevealMessage();
+	if (!AnswerRevealMessage.IsEmpty())
+	{
+		BroadcastSystemMessage(AnswerRevealMessage);
+	}
+
 	ResetRoomState();
+}
+
+bool AGCGameMode::IsGameSelectionStarter(const AGCPlayerState* PlayerState) const
+{
+	return IsValid(PlayerState) && PlayerState == GameSelectionStarter;
 }
 
 bool AGCGameMode::IsCurrentTurnPlayer(const AGCPlayerController* SenderPC) const
@@ -876,6 +972,31 @@ FString AGCGameMode::MakeWordlePublicSummary(const FString& PlayerName, const TA
 		YellowCount,
 		GrayCount
 	);
+}
+
+FString AGCGameMode::BuildCurrentAnswerRevealMessage() const
+{
+	const AGCGameState* GCGameState = GetGameState<AGCGameState>();
+	if (!IsValid(GCGameState))
+	{
+		return TEXT("");
+	}
+
+	switch (GCGameState->GetCurrentMiniGameType())
+	{
+	case EMiniGameType::Wordle:
+		return CurrentWordleAnswer.IsEmpty()
+			? TEXT("")
+			: FString::Printf(TEXT("이번 워들의 정답은 %s 였습니다."), *CurrentWordleAnswer.ToUpper());
+
+	case EMiniGameType::NumberBaseball:
+		return AnswerNumberString.IsEmpty()
+			? TEXT("")
+			: FString::Printf(TEXT("이번 숫자야구의 정답은 %s 였습니다."), *AnswerNumberString);
+
+	default:
+		return TEXT("");
+	}
 }
 
 void AGCGameMode::StartNumberBaseballGame()

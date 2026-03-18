@@ -7,6 +7,7 @@
 
 class UEditableTextBox;
 class UButton;
+class UTextBlock;
 
 UCLASS()
 class CPP_ASSIGNMENT_9_JCM_API UGCNicknameEntryWidgetBase : public UUserWidget
@@ -15,6 +16,10 @@ class CPP_ASSIGNMENT_9_JCM_API UGCNicknameEntryWidgetBase : public UUserWidget
 	
 protected:
 	virtual void NativeConstruct() override;
+
+public:
+	void ShowNicknameError(const FString& ErrorMessage);
+	void HideNicknameError();
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, Category="NicknameEntry", meta=(BindWidget))
@@ -22,6 +27,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category="NicknameEntry", meta=(BindWidget))
 	UButton* ConfirmButton;
+
+	UPROPERTY(BlueprintReadOnly, Category="NicknameEntry", meta=(BindWidgetOptional))
+	UTextBlock* ErrorText;
 	
 	UFUNCTION()
 	void OnClickedConfirmedButton();

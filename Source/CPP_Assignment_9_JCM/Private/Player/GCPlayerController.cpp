@@ -106,6 +106,24 @@ void AGCPlayerController::ServerSubmitNickname_Implementation(const FString& Nic
 	GCGameMode->HandleNicknameSubmit(this, Nickname);
 }
 
+void AGCPlayerController::ClientHandleNicknameSubmitResult_Implementation(bool bSuccess, const FString& ErrorMessage)
+{
+	if (!IsValid(NicknameEntryWidgetInstance))
+	{
+		return;
+	}
+
+	if (bSuccess)
+	{
+		NicknameEntryWidgetInstance->HideNicknameError();
+		ShowChatRoomUI();
+		return;
+	}
+
+	NicknameEntryWidgetInstance->ShowNicknameError(ErrorMessage);
+	ShowNicknameEntryUI();
+}
+
 void AGCPlayerController::ServerSubmitChatInput_Implementation(const FString& InputText)
 {
 	AGCGameMode* GCGameMode = GetWorld() ? GetWorld()->GetAuthGameMode<AGCGameMode>() : nullptr;

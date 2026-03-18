@@ -47,6 +47,7 @@ protected:
 	void AdvanceTurn();
 	void FinishRound();
 	void EndCurrentGame(const FString& EndMessage = TEXT("현재 게임을 종료합니다."));
+	bool IsGameSelectionStarter(const AGCPlayerState* PlayerState) const;
 	
 	bool IsCurrentTurnPlayer(const AGCPlayerController* SenderPC) const;
 	AGCPlayerState* GetCurrentTurnPlayerState() const;
@@ -67,9 +68,12 @@ protected:
 	void SyncGameState();
 	
 private:
+	bool IsNicknameAlreadyInUse(const FString& Nickname, const AGCPlayerState* RequestPlayerState = nullptr) const;
+	FString GenerateDefaultNickname();
 	TArray<EWordleLetterState> JudgeWordleStates(const FString& Answer, const FString& Guess) const;
 	FString MakeWordlePrivateResultText(const FString& GuessWord, const TArray<EWordleLetterState>& States) const;
 	FString MakeWordlePublicSummary(const FString& PlayerName, const TArray<EWordleLetterState>& States) const;
+	FString BuildCurrentAnswerRevealMessage() const;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Wordle|Data")
@@ -91,6 +95,9 @@ protected:
 	
 	UPROPERTY()
 	TArray<TObjectPtr<AGCPlayerState>> ActiveParticipants;
+
+	UPROPERTY()
+	TObjectPtr<AGCPlayerState> GameSelectionStarter = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Turn")
 	float TurnTimeLimit = 15.0f;
@@ -110,6 +117,9 @@ protected:
 	
 	UPROPERTY()
 	int32 CurrentTurnPlayerIndex = INDEX_NONE;
+
+	UPROPERTY()
+	int32 NextDefaultNicknameNumber = 1;
 	
 	FTimerHandle RecruitTimerHandle;
 	FTimerHandle TurnTimerHandle;
