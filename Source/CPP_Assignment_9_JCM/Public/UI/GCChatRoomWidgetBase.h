@@ -30,16 +30,16 @@ public:
 	void BP_UpdateRoomStatusText(const FString& InStatusText);
 	
 protected:
-	UPROPERTY(meta=(BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category="ChatRoom", meta=(BindWidget))
 	UScrollBox* ChatScrollBox;
 
-	UPROPERTY(meta=(BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category="ChatRoom", meta=(BindWidget))
 	UEditableTextBox* ChatInputTextBox;
 
-	UPROPERTY(meta=(BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category="ChatRoom", meta=(BindWidget))
 	UButton* SendButton;
 
-	UPROPERTY(meta=(BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, Category="ChatRoom", meta=(BindWidgetOptional))
 	UTextBlock* RoomStatusText;
 
 	UFUNCTION()

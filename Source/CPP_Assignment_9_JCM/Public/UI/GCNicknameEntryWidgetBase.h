@@ -17,10 +17,10 @@ protected:
 	virtual void NativeConstruct() override;
 	
 protected:
-	UPROPERTY(meta=(BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category="NicknameEntry", meta=(BindWidget))
 	UEditableTextBox* NicknameTextBox;
-	
-	UPROPERTY(meta=(BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, Category="NicknameEntry", meta=(BindWidget))
 	UButton* ConfirmButton;
 	
 	UFUNCTION()
