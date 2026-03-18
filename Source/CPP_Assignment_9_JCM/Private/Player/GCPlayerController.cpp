@@ -50,6 +50,8 @@ void AGCPlayerController::CreateInitialUI()
 			GameOverlayWidgetInstance->AddToViewport(20);
 		}
 	}
+	
+	ShowNicknameEntryUI();
 }
 
 void AGCPlayerController::ShowNicknameEntryUI()
@@ -61,7 +63,7 @@ void AGCPlayerController::ShowNicknameEntryUI()
 
 	if (IsValid(ChatRoomWidgetInstance))
 	{
-		ChatRoomWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+		ChatRoomWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 	}
 
 	if (IsValid(GameOverlayWidgetInstance))
@@ -88,7 +90,7 @@ void AGCPlayerController::ShowChatRoomUI()
 
 	if (IsValid(GameOverlayWidgetInstance))
 	{
-		GameOverlayWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+		GameOverlayWidgetInstance->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 
 	FInputModeGameAndUI InputMode;

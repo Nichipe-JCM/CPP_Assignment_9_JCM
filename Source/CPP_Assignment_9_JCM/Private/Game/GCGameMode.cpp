@@ -27,8 +27,6 @@ void AGCGameMode::PostLogin(APlayerController* NewPlayer)
 	
 	AGCPlayerController* NewGCPC = Cast<AGCPlayerController>(NewPlayer);
 	if (!IsValid(NewGCPC)) return;
-	
-	BroadcastSystemMessage(TEXT("새 플레이어가 입장했습니다."));
 }
 
 void AGCGameMode::Logout(AController* ExitingController)
@@ -162,7 +160,7 @@ void AGCGameMode::ProcessCommand(AGCPlayerController* SenderPC, const FString& C
 		AddParticipant(SenderPS);
 		StartRecruitment();
 
-		BroadcastSystemMessage(FString::Printf(TEXT("%s 님이 워들 모집을 시작했습니다."), *SenderPS->GetChatNickname()));
+		BroadcastSystemMessage(FString::Printf(TEXT("%s 님이 워들 모집을 시작했습니다. !참가 를 입력해 참가신청을 해보세요."), *SenderPS->GetChatNickname()));
 		return;
 	}
 
@@ -178,7 +176,7 @@ void AGCGameMode::ProcessCommand(AGCPlayerController* SenderPC, const FString& C
 		AddParticipant(SenderPS);
 		StartRecruitment();
 
-		BroadcastSystemMessage(FString::Printf(TEXT("%s 님이 숫자야구 모집을 시작했습니다."), *SenderPS->GetChatNickname()));
+		BroadcastSystemMessage(FString::Printf(TEXT("%s 님이 숫자야구 모집을 시작했습니다. !참가 를 입력해 참가신청을 해보세요."), *SenderPS->GetChatNickname()));
 		return;
 	}
 
