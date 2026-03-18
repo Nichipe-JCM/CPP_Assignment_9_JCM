@@ -24,14 +24,22 @@ public:
 	void ClearPublicTurnSummary();
 	
 public:
-	ERoomPhase GetCurrentRoundPhase() const;
-	EMiniGameType GetCurrentMiniGameType() const;
-	const FRecruitInfo& GetRecruitInfo() const;
-	int32 GetCurrentRoundIndex() const;
-	AGCPlayerState* GetCurrentTurnPlayer() const;
-	const TArray<FChatMessageData>& GetChatMessages() const;
-	const TArray<TObjectPtr<AGCPlayerState>>& GetCurrentParticipants() const;
-	const TArray<FString>& GetPublicTurnSummaryLines() const;
+	void SetCurrentRoomPhase(ERoomPhase NewPhase) {CurrentRoomPhase = NewPhase;}
+	void SetCurrentMiniGameType(EMiniGameType NewMiniGameType) {CurrentMiniGameType = NewMiniGameType;}
+	void SetRecruitInfo(const FRecruitInfo& NewRecruitInfo) {RecruitInfo = NewRecruitInfo;}
+	void SetCurrentRoundIndex(int32 NewRoundIndex) {CurrentRoundIndex = NewRoundIndex;}
+	void SetCurrentTurnPlayer(AGCPlayerState* NewTurnPlayer) {CurrentTurnPlayer = NewTurnPlayer;}
+	void SetCurrentParticipants(const TArray<TObjectPtr<AGCPlayerState>>& NewParticipants) {CurrentParticipants = NewParticipants;}
+	void AddPublicTurnSummaryLine(const FString& NewLine) {PublicTurnSummaryLines.Add(NewLine);}	
+public:
+	ERoomPhase GetCurrentRoomPhase() const {return CurrentRoomPhase;}
+	EMiniGameType GetCurrentMiniGameType() const {return CurrentMiniGameType;}
+	const FRecruitInfo& GetRecruitInfo() const {return RecruitInfo;}
+	int32 GetCurrentRoundIndex() const {return CurrentRoundIndex;}
+	AGCPlayerState* GetCurrentTurnPlayer() const {return CurrentTurnPlayer;}
+	const TArray<FChatMessageData>& GetChatMessages() const {return ChatMessages;}
+	const TArray<TObjectPtr<AGCPlayerState>>& GetCurrentParticipants() const {return CurrentParticipants;}
+	const TArray<FString>& GetPublicTurnSummaryLines() const {return PublicTurnSummaryLines;}
 	
 protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category="Room")
