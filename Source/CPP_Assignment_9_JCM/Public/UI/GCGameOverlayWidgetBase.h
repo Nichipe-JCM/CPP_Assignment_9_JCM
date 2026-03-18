@@ -8,6 +8,7 @@
 
 class UTextBlock;
 class UScrollBox;
+class AGCPlayerState;
 
 UCLASS()
 class CPP_ASSIGNMENT_9_JCM_API UGCGameOverlayWidgetBase : public UUserWidget
@@ -21,6 +22,7 @@ protected:
 public:
 	void NotifyPrivateTurnResult(const FString& ResultText);
 	void NotifyTurnStarted(float InTurnTimeLimit);
+	void NotifyTurnEnded();
 	void NotifyTurnTimedOut();
 
 protected:
@@ -34,10 +36,13 @@ protected:
 	void UpdateSummaryText(const TArray<FString>& SummaryLines);
 	void UpdateTurnTimerText();
 	void UpdatePrivateResultText(const FString& NewText);
+	void AppendPrivateResultText(const FString& NewText);
+	void ClearPrivateResultText();
 
 	FString MakeRoomPhaseString(ERoomPhase InPhase) const;
 	FString MakeMiniGameTypeString(EMiniGameType InType) const;
 	FString BuildSummaryString(const TArray<FString>& SummaryLines) const;
+	FString BuildPrivateResultString() const;
 
 protected:
 	UPROPERTY(meta=(BindWidget))
@@ -68,7 +73,9 @@ protected:
 	ERoomPhase CachedRoomPhase = ERoomPhase::Lobby;
 	EMiniGameType CachedMiniGameType = EMiniGameType::None;
 	FRecruitInfo CachedRecruitInfo;
+	TObjectPtr<AGCPlayerState> CachedTurnPlayer = nullptr;
 	int32 CachedSummaryCount = INDEX_NONE;
+	TArray<FString> PrivateResultHistory;
 	
 	float LocalRecruitRemainingTime = 0.f;
 	bool bRecruitCountdownActive = false;

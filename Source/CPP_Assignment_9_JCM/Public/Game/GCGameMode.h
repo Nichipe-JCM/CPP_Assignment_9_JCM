@@ -46,7 +46,7 @@ protected:
 	void EndTurnByTimeout();
 	void AdvanceTurn();
 	void FinishRound();
-	void EndCurrentGame();
+	void EndCurrentGame(const FString& EndMessage = TEXT("현재 게임을 종료합니다."));
 	
 	bool IsCurrentTurnPlayer(const AGCPlayerController* SenderPC) const;
 	AGCPlayerState* GetCurrentTurnPlayerState() const;
@@ -68,7 +68,7 @@ protected:
 	
 private:
 	TArray<EWordleLetterState> JudgeWordleStates(const FString& Answer, const FString& Guess) const;
-	FString MakeWordlePrivateResultText(const TArray<EWordleLetterState>& States) const;
+	FString MakeWordlePrivateResultText(const FString& GuessWord, const TArray<EWordleLetterState>& States) const;
 	FString MakeWordlePublicSummary(const FString& PlayerName, const TArray<EWordleLetterState>& States) const;
 	
 protected:

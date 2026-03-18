@@ -37,6 +37,9 @@ public:
 	
 	UFUNCTION(Client, Reliable)
 	void ClientNotifyTurnStarted(float InTurnTimeLimit);
+
+	UFUNCTION(Client, Reliable)
+	void ClientNotifyTurnEnded();
 	
 	UFUNCTION(Client, Reliable)
 	void ClientNotifyTurnTimedOut();

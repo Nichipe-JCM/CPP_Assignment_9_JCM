@@ -128,6 +128,13 @@ void AGCPlayerController::ClientNotifyTurnStarted_Implementation(float InTurnTim
 	GameOverlayWidgetInstance->NotifyTurnStarted(InTurnTimeLimit);
 }
 
+void AGCPlayerController::ClientNotifyTurnEnded_Implementation()
+{
+	if (!IsValid(GameOverlayWidgetInstance)) return;
+	
+	GameOverlayWidgetInstance->NotifyTurnEnded();
+}
+
 void AGCPlayerController::ClientNotifyTurnTimedOut_Implementation()
 {
 	if (!IsValid(GameOverlayWidgetInstance)) return;
