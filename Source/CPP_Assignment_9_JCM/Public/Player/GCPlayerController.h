@@ -22,6 +22,10 @@ protected:
 	void CreateInitialUI();
 	
 public:
+	void ShowNicknameEntryUI();
+	void ShowChatRoomUI();
+	
+public:
 	UFUNCTION(Server, Reliable)
 	void ServerSubmitNickname(const FString& Nickname);
 	
