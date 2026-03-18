@@ -364,7 +364,7 @@ void AGCGameMode::StartGameSelection(AGCPlayerController* SenderPC)
 	GameSelectionStarter = SenderPC->GetPlayerState<AGCPlayerState>();
 	SyncGameState();
 
-	SenderPC->ClientReceivePrivateTurnResult(TEXT("게임 선택을 시작합니다. !wordle 또는 !baseball 을 입력하세요."));
+	SenderPC->ClientReceivePrivateSystemMessage(TEXT("게임 선택을 시작합니다. !wordle 또는 !baseball 을 입력하세요."));
 }
 
 void AGCGameMode::SelectMiniGame(EMiniGameType InGameType)
@@ -644,7 +644,7 @@ void AGCGameMode::EndTurnByInput(AGCPlayerController* SenderPC, const FString& I
 
 		if (!IsGuessNumberString(FinalGuess))
 		{
-			SenderPC->ClientReceivePrivateTurnResult(TEXT("중복 없는 3자리 숫자를 입력하세요."));
+			SenderPC->ClientReceivePrivateSystemMessage(TEXT("중복 없는 3자리 숫자를 입력하세요."));
 			return;
 		}
 
@@ -1112,7 +1112,7 @@ void AGCGameMode::ResolveNumberBaseballTurn(AGCPlayerController* SenderPC, const
 	}
 
 	SenderPC->ClientReceivePrivateTurnResult(
-		FString::Printf(TEXT("%d Strike, %d Ball"), Strike, Ball)
+		FString::Printf(TEXT("%s : %d Strike, %d Ball"), *GuessNumberString, Strike, Ball)
 	);
 
 	GCGameState->AddPublicTurnSummaryLine(

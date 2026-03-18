@@ -53,10 +53,12 @@ protected:
 protected:
 	void RefreshFromGameState();
 	FString BuildRoomStatusText() const;
+	TArray<FChatMessageData> BuildCombinedChatMessages(const TArray<FChatMessageData>& PublicMessages) const;
 	
 protected:
 	int32 CachedChatMessageCount = INDEX_NONE;
 	int32 CachedPrivateSystemMessageCount = 0;
 	FString CachedRoomStatusText; 
 	TArray<FChatMessageData> LocalPrivateSystemMessages;
+	TArray<int32> LocalPrivateSystemMessageAnchors;
 };

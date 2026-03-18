@@ -58,11 +58,15 @@ void UGCChatRoomWidgetBase::NotifyPrivateSystemMessage(const FString& Message)
 {
 	if (Message.IsEmpty()) return;
 
+	const AGCGameState* GCGS = GetWorld() ? GetWorld()->GetGameState<AGCGameState>() : nullptr;
+	const int32 PublicMessageAnchor = IsValid(GCGS) ? GCGS->GetChatMessages().Num() : 0;
+
 	FChatMessageData NewMessage;
 	NewMessage.SenderName = TEXT("System");
 	NewMessage.Message = Message;
 	NewMessage.MessageType = EChatMessageType::System;
 	LocalPrivateSystemMessages.Add(NewMessage);
+	LocalPrivateSystemMessageAnchors.Add(PublicMessageAnchor);
 
 	RefreshFromGameState();
 }
@@ -78,8 +82,7 @@ void UGCChatRoomWidgetBase::RefreshFromGameState()
 		CachedChatMessageCount = Messages.Num();
 		CachedPrivateSystemMessageCount = LocalPrivateSystemMessages.Num();
 
-		TArray<FChatMessageData> CombinedMessages = Messages;
-		CombinedMessages.Append(LocalPrivateSystemMessages);
+		TArray<FChatMessageData> CombinedMessages = BuildCombinedChatMessages(Messages);
 		BP_RefreshChatMessages(CombinedMessages);
 	}
 
@@ -132,3 +135,32 @@ FString UGCChatRoomWidgetBase::BuildRoomStatusText() const
 
 	return FString::Printf(TEXT("Room State : %s"), *PhaseText);
 }
+
+TArray<FChatMessageData> UGCChatRoomWidgetBase::BuildCombinedChatMessages(const TArray<FChatMessageData>& PublicMessages) const
+{
+	TArray<FChatMessageData> CombinedMessages;
+	CombinedMessages.Reserve(PublicMessages.Num() + LocalPrivateSystemMessages.Num());
+
+	for (int32 PublicIndex = 0; PublicIndex <= PublicMessages.Num(); ++PublicIndex)
+	{
+		for (int32 LocalIndex = 0; LocalIndex < LocalPrivateSystemMessages.Num(); ++LocalIndex)
+		{
+			const int32 Anchor = LocalPrivateSystemMessageAnchors.IsValidIndex(LocalIndex)
+				? FMath::Clamp(LocalPrivateSystemMessageAnchors[LocalIndex], 0, PublicMessages.Num())
+				: PublicMessages.Num();
+
+			if (Anchor == PublicIndex)
+			{
+				CombinedMessages.Add(LocalPrivateSystemMessages[LocalIndex]);
+			}
+		}
+
+		if (PublicIndex < PublicMessages.Num())
+		{
+			CombinedMessages.Add(PublicMessages[PublicIndex]);
+		}
+	}
+
+	return CombinedMessages;
+}
+
