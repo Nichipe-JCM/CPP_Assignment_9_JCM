@@ -172,7 +172,7 @@ void AGCGameMode::HandleChatInput(AGCPlayerController* SenderPC, const FString& 
 	{
 		if (!IsCurrentTurnPlayer(SenderPC))
 		{
-			SenderPC->ClientReceivePrivateTurnResult(TEXT("지금은 당신의 턴이 아닙니다."));
+			SenderPC->ClientReceivePrivateSystemMessage(TEXT("지금은 당신의 턴이 아닙니다."));
 			return;
 		}
 
@@ -200,7 +200,7 @@ void AGCGameMode::ProcessCommand(AGCPlayerController* SenderPC, const FString& C
 	
 	const ERoomPhase CurrentPhase = GCGameState->GetCurrentRoomPhase();
 
-	if (CommandText.Equals(TEXT("!게임")))
+	if (CommandText.Equals(TEXT("!game"), ESearchCase::IgnoreCase) || CommandText.Equals(TEXT("!게임")))
 	{
 		if (CurrentPhase == ERoomPhase::SelectingGame)
 		{
@@ -218,11 +218,11 @@ void AGCGameMode::ProcessCommand(AGCPlayerController* SenderPC, const FString& C
 		return;
 	}
 
-	if (CommandText.Equals(TEXT("!워들")))
+	if (CommandText.Equals(TEXT("!wordle"), ESearchCase::IgnoreCase) || CommandText.Equals(TEXT("!워들")))
 	{
 		if (CurrentPhase != ERoomPhase::SelectingGame)
 		{
-			SenderPC->ClientReceivePrivateTurnResult(TEXT("먼저 !게임 으로 게임 선택 상태로 들어가세요."));
+			SenderPC->ClientReceivePrivateTurnResult(TEXT("먼저 !game 으로 게임 선택 상태로 들어가세요."));
 			return;
 		}
 
@@ -236,15 +236,15 @@ void AGCGameMode::ProcessCommand(AGCPlayerController* SenderPC, const FString& C
 		AddParticipant(SenderPS);
 		StartRecruitment();
 
-		BroadcastSystemMessage(FString::Printf(TEXT("%s 님이 워들 모집을 시작했습니다. !참가 를 입력해 참가신청을 해보세요."), *SenderPS->GetChatNickname()));
+		BroadcastSystemMessage(FString::Printf(TEXT("%s 님이 워들 모집을 시작했습니다. !join 을 입력해 참가신청을 해보세요."), *SenderPS->GetChatNickname()));
 		return;
 	}
 
-	if (CommandText.Equals(TEXT("!숫자야구")))
+	if (CommandText.Equals(TEXT("!baseball"), ESearchCase::IgnoreCase) || CommandText.Equals(TEXT("!숫자야구")))
 	{
 		if (CurrentPhase != ERoomPhase::SelectingGame)
 		{
-			SenderPC->ClientReceivePrivateTurnResult(TEXT("먼저 !게임 으로 게임 선택 상태로 들어가세요."));
+			SenderPC->ClientReceivePrivateTurnResult(TEXT("먼저 !game 으로 게임 선택 상태로 들어가세요."));
 			return;
 		}
 
@@ -258,11 +258,11 @@ void AGCGameMode::ProcessCommand(AGCPlayerController* SenderPC, const FString& C
 		AddParticipant(SenderPS);
 		StartRecruitment();
 
-		BroadcastSystemMessage(FString::Printf(TEXT("%s 님이 숫자야구 모집을 시작했습니다. !참가 를 입력해 참가신청을 해보세요."), *SenderPS->GetChatNickname()));
+		BroadcastSystemMessage(FString::Printf(TEXT("%s 님이 숫자야구 모집을 시작했습니다. !join 을 입력해 참가신청을 해보세요."), *SenderPS->GetChatNickname()));
 		return;
 	}
 
-	if (CommandText.Equals(TEXT("!참가")))
+	if (CommandText.Equals(TEXT("!join"), ESearchCase::IgnoreCase) || CommandText.Equals(TEXT("!참가")))
 	{
 		const FRecruitInfo& RecruitInfo = GCGameState->GetRecruitInfo();
 
@@ -328,6 +328,7 @@ void AGCGameMode::ResetRoomState()
 	GetWorldTimerManager().ClearTimer(TurnTimerHandle);
 	GetWorldTimerManager().ClearTimer(RecruitTimerHandle);
 	GetWorldTimerManager().ClearTimer(RoundSummaryTimerHandle);
+	GetWorldTimerManager().ClearTimer(TurnCountdownUpdateTimerHandle);
 	
 	CurrentRoundIndex = 0;
 	CurrentTurnPlayerIndex = INDEX_NONE;
@@ -346,6 +347,7 @@ void AGCGameMode::ResetRoomState()
 	GCGameState->SetRecruitInfo(NewRecruitInfo);
 	GCGameState->SetCurrentRoundIndex(0);
 	GCGameState->SetCurrentTurnPlayer(nullptr);
+	GCGameState->SetTurnRemainingTime(0.0f);
 	GCGameState->ClearPublicTurnSummary();
 
 	SyncGameState();
@@ -362,7 +364,7 @@ void AGCGameMode::StartGameSelection(AGCPlayerController* SenderPC)
 	GameSelectionStarter = SenderPC->GetPlayerState<AGCPlayerState>();
 	SyncGameState();
 
-	SenderPC->ClientReceivePrivateTurnResult(TEXT("게임 선택을 시작합니다. !워들 또는 !숫자야구 를 입력하세요."));
+	SenderPC->ClientReceivePrivateTurnResult(TEXT("게임 선택을 시작합니다. !wordle 또는 !baseball 을 입력하세요."));
 }
 
 void AGCGameMode::SelectMiniGame(EMiniGameType InGameType)
@@ -543,6 +545,17 @@ void AGCGameMode::StartTurn()
 	AGCPlayerState* TurnPlayerState = GetCurrentTurnPlayerState();
 	if (!IsValid(TurnPlayerState)) return;
 
+	const FString TurnPlayerName = TurnPlayerState->GetChatNickname().IsEmpty()
+		? TEXT("Player")
+		: TurnPlayerState->GetChatNickname();
+	BroadcastSystemMessage(FString::Printf(TEXT("%s의 턴입니다"), *TurnPlayerName));
+
+	AGCGameState* GCGameState = GetGameState<AGCGameState>();
+	if (IsValid(GCGameState))
+	{
+		GCGameState->SetTurnRemainingTime(TurnTimeLimit);
+	}
+
 	AController* OwnerController = Cast<AController>(TurnPlayerState->GetOwner());
 	AGCPlayerController* TurnPC = Cast<AGCPlayerController>(OwnerController);
 
@@ -554,6 +567,7 @@ void AGCGameMode::StartTurn()
 	SyncGameState();
 
 	GetWorldTimerManager().ClearTimer(TurnTimerHandle);
+	GetWorldTimerManager().ClearTimer(TurnCountdownUpdateTimerHandle);
 	GetWorldTimerManager().SetTimer(
 		TurnTimerHandle,
 		this,
@@ -561,6 +575,32 @@ void AGCGameMode::StartTurn()
 		TurnTimeLimit,
 		false
 	);
+
+	GetWorldTimerManager().SetTimer(
+		TurnCountdownUpdateTimerHandle,
+		this,
+		&AGCGameMode::UpdateTurnRemainingTime,
+		0.1f,
+		true
+	);
+}
+
+void AGCGameMode::UpdateTurnRemainingTime()
+{
+	AGCGameState* GCGameState = GetGameState<AGCGameState>();
+	if (!IsValid(GCGameState))
+	{
+		GetWorldTimerManager().ClearTimer(TurnCountdownUpdateTimerHandle);
+		return;
+	}
+
+	const float NewTurnRemainingTime = FMath::Max(0.0f, GetWorldTimerManager().GetTimerRemaining(TurnTimerHandle));
+	GCGameState->SetTurnRemainingTime(NewTurnRemainingTime);
+
+	if (NewTurnRemainingTime <= KINDA_SMALL_NUMBER)
+	{
+		GetWorldTimerManager().ClearTimer(TurnCountdownUpdateTimerHandle);
+	}
 }
 
 void AGCGameMode::EndTurnByInput(AGCPlayerController* SenderPC, const FString& InputText)
@@ -569,7 +609,7 @@ void AGCGameMode::EndTurnByInput(AGCPlayerController* SenderPC, const FString& I
 
 	if (!IsCurrentTurnPlayer(SenderPC))
 	{
-		SenderPC->ClientReceivePrivateTurnResult(TEXT("지금은 당신의 턴이 아닙니다."));
+		SenderPC->ClientReceivePrivateSystemMessage(TEXT("지금은 당신의 턴이 아닙니다."));
 		return;
 	}
 
@@ -587,11 +627,13 @@ void AGCGameMode::EndTurnByInput(AGCPlayerController* SenderPC, const FString& I
 
 		if (!ValidateWordleGuess(FinalGuess))
 		{
-			SenderPC->ClientReceivePrivateTurnResult(TEXT("유효한 5글자 단어가 아닙니다."));
+			SenderPC->ClientReceivePrivateSystemMessage(TEXT("유효한 5글자 단어가 아닙니다."));
 			return;
 		}
 
 		GetWorldTimerManager().ClearTimer(TurnTimerHandle);
+		GetWorldTimerManager().ClearTimer(TurnCountdownUpdateTimerHandle);
+		GCGameState->SetTurnRemainingTime(0.0f);
 		SenderPC->ClientNotifyTurnEnded();
 		ResolveWordleTurn(SenderPC, FinalGuess);
 	}
@@ -607,6 +649,8 @@ void AGCGameMode::EndTurnByInput(AGCPlayerController* SenderPC, const FString& I
 		}
 
 		GetWorldTimerManager().ClearTimer(TurnTimerHandle);
+		GetWorldTimerManager().ClearTimer(TurnCountdownUpdateTimerHandle);
+		GCGameState->SetTurnRemainingTime(0.0f);
 		SenderPC->ClientNotifyTurnEnded();
 		ResolveNumberBaseballTurn(SenderPC, FinalGuess);
 	}
@@ -624,6 +668,9 @@ void AGCGameMode::EndTurnByTimeout()
 	AGCGameState* GCGameState = GetGameState<AGCGameState>();
 
 	if (!IsValid(TurnPlayerState) || !IsValid(GCGameState)) return;
+
+	GetWorldTimerManager().ClearTimer(TurnCountdownUpdateTimerHandle);
+	GCGameState->SetTurnRemainingTime(0.0f);
 
 	TurnPlayerState->SetUsedTurnCount(TurnPlayerState->GetUsedTurnCount() + 1);
 

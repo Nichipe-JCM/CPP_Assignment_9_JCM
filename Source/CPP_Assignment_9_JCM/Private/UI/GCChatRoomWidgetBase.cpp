@@ -54,16 +54,33 @@ void UGCChatRoomWidgetBase::OnChatInputTextCommitted(const FText& Text, ETextCom
 	OnClickedSendButton();
 }
 
+void UGCChatRoomWidgetBase::NotifyPrivateSystemMessage(const FString& Message)
+{
+	if (Message.IsEmpty()) return;
+
+	FChatMessageData NewMessage;
+	NewMessage.SenderName = TEXT("System");
+	NewMessage.Message = Message;
+	NewMessage.MessageType = EChatMessageType::System;
+	LocalPrivateSystemMessages.Add(NewMessage);
+
+	RefreshFromGameState();
+}
+
 void UGCChatRoomWidgetBase::RefreshFromGameState()
 {
 	AGCGameState* GCGS = GetWorld() ? GetWorld()->GetGameState<AGCGameState>() : nullptr;
 	if (!IsValid(GCGS)) return;
 
 	const TArray<FChatMessageData>& Messages = GCGS->GetChatMessages();
-	if (CachedChatMessageCount != Messages.Num())
+	if (CachedChatMessageCount != Messages.Num() || CachedPrivateSystemMessageCount != LocalPrivateSystemMessages.Num())
 	{
 		CachedChatMessageCount = Messages.Num();
-		BP_RefreshChatMessages(Messages);
+		CachedPrivateSystemMessageCount = LocalPrivateSystemMessages.Num();
+
+		TArray<FChatMessageData> CombinedMessages = Messages;
+		CombinedMessages.Append(LocalPrivateSystemMessages);
+		BP_RefreshChatMessages(CombinedMessages);
 	}
 
 	const FString NewStatusText = BuildRoomStatusText();

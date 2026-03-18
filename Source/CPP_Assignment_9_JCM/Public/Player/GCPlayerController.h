@@ -34,6 +34,9 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void ClientHandleNicknameSubmitResult(bool bSuccess, const FString& ErrorMessage);
+
+	UFUNCTION(Client, Reliable)
+	void ClientReceivePrivateSystemMessage(const FString& Message);
 	
 	UFUNCTION(Client, Reliable)
 	void ClientReceivePrivateTurnResult(const FString& ResultText);

@@ -1,7 +1,6 @@
 // Copyright 2026 Joo CheolMin. All Rights Reserved
 
 #include "CPP_Assignment_9_JCM/Public/Game/GCGameState.h"
-#include "CPP_Assignment_9_JCM/Public/Player/GCPlayerState.h"
 #include "Net/UnrealNetwork.h"
 
 AGCGameState::AGCGameState()
@@ -17,6 +16,7 @@ void AGCGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(AGCGameState, RecruitInfo);
 	DOREPLIFETIME(AGCGameState, CurrentRoundIndex);
 	DOREPLIFETIME(AGCGameState, CurrentTurnPlayer);
+	DOREPLIFETIME(AGCGameState, TurnRemainingTime);
 	DOREPLIFETIME(AGCGameState, ChatMessages);
 	DOREPLIFETIME(AGCGameState, CurrentParticipants);
 	DOREPLIFETIME(AGCGameState, PublicTurnSummaryLines);

@@ -38,7 +38,7 @@ void UGCNicknameEntryWidgetBase::HideNicknameError()
 	if (!IsValid(ErrorText)) return;
 
 	ErrorText->SetText(FText::GetEmpty());
-	ErrorText->SetVisibility(ESlateVisibility::Collapsed);
+	ErrorText->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UGCNicknameEntryWidgetBase::OnClickedConfirmedButton()

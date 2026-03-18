@@ -151,6 +151,15 @@ void UGCGameOverlayWidgetBase::RefreshFromGameState()
 		UpdateRecruitText();
 	}
 
+	const float NewTurnRemainingTime = GCGS->GetTurnRemainingTime();
+	const bool bShouldShowTurnCountdown = NewPhase == ERoomPhase::Playing && NewTurnRemainingTime > 0.0f;
+	if (!FMath::IsNearlyEqual(LocalTurnRemainingTime, NewTurnRemainingTime) || bTurnCountdownActive != bShouldShowTurnCountdown)
+	{
+		LocalTurnRemainingTime = NewTurnRemainingTime;
+		bTurnCountdownActive = bShouldShowTurnCountdown;
+		UpdateTurnTimerText();
+	}
+
 	AGCPlayerState* NewTurnPlayer = GCGS->GetCurrentTurnPlayer();
 	if (CachedTurnPlayer != NewTurnPlayer)
 	{
@@ -164,10 +173,6 @@ void UGCGameOverlayWidgetBase::RefreshFromGameState()
 
 		if (!bIsLocalPlayersTurn)
 		{
-			bTurnCountdownActive = false;
-			LocalTurnRemainingTime = 0.0f;
-			UpdateTurnTimerText();
-
 			if (IsValid(TurnStateText))
 			{
 				TurnStateText->SetText(
@@ -202,12 +207,10 @@ void UGCGameOverlayWidgetBase::UpdateTurnCountdown(float InDeltaTime)
 {
 	if (!bTurnCountdownActive) return;
 
-	LocalTurnRemainingTime = FMath::Max(0.0f, LocalTurnRemainingTime - InDeltaTime);
-	UpdateTurnTimerText();
-
 	if (LocalTurnRemainingTime <= 0.0f)
 	{
 		bTurnCountdownActive = false;
+		UpdateTurnTimerText();
 	}
 }
 

@@ -42,6 +42,7 @@ protected:
 	
 	void StartMiniGame();
 	void StartTurn();
+	void UpdateTurnRemainingTime();
 	void EndTurnByInput(AGCPlayerController* SenderPC, const FString& InputText);
 	void EndTurnByTimeout();
 	void AdvanceTurn();
@@ -123,5 +124,6 @@ protected:
 	
 	FTimerHandle RecruitTimerHandle;
 	FTimerHandle TurnTimerHandle;
+	FTimerHandle TurnCountdownUpdateTimerHandle;
 	FTimerHandle RoundSummaryTimerHandle;
 };

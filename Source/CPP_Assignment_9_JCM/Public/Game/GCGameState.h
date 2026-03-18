@@ -29,6 +29,7 @@ public:
 	void SetRecruitInfo(const FRecruitInfo& NewRecruitInfo) {RecruitInfo = NewRecruitInfo;}
 	void SetCurrentRoundIndex(int32 NewRoundIndex) {CurrentRoundIndex = NewRoundIndex;}
 	void SetCurrentTurnPlayer(AGCPlayerState* NewTurnPlayer) {CurrentTurnPlayer = NewTurnPlayer;}
+	void SetTurnRemainingTime(float NewTurnRemainingTime) {TurnRemainingTime = NewTurnRemainingTime;}
 	void SetCurrentParticipants(const TArray<TObjectPtr<AGCPlayerState>>& NewParticipants) {CurrentParticipants = NewParticipants;}
 	void AddPublicTurnSummaryLine(const FString& NewLine) {PublicTurnSummaryLines.Add(NewLine);}	
 public:
@@ -37,6 +38,7 @@ public:
 	const FRecruitInfo& GetRecruitInfo() const {return RecruitInfo;}
 	int32 GetCurrentRoundIndex() const {return CurrentRoundIndex;}
 	AGCPlayerState* GetCurrentTurnPlayer() const {return CurrentTurnPlayer;}
+	float GetTurnRemainingTime() const {return TurnRemainingTime;}
 	const TArray<FChatMessageData>& GetChatMessages() const {return ChatMessages;}
 	const TArray<TObjectPtr<AGCPlayerState>>& GetCurrentParticipants() const {return CurrentParticipants;}
 	const TArray<FString>& GetPublicTurnSummaryLines() const {return PublicTurnSummaryLines;}
@@ -56,6 +58,9 @@ protected:
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category="Turn")
 	TObjectPtr<AGCPlayerState> CurrentTurnPlayer = nullptr;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Category="Turn")
+	float TurnRemainingTime = 0.0f;
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category="Chat")
 	TArray<FChatMessageData> ChatMessages;

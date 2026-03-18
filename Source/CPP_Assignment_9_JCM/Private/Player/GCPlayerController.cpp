@@ -132,6 +132,13 @@ void AGCPlayerController::ServerSubmitChatInput_Implementation(const FString& In
 	GCGameMode->HandleChatInput(this, InputText);
 }
 
+void AGCPlayerController::ClientReceivePrivateSystemMessage_Implementation(const FString& Message)
+{
+	if (!IsValid(ChatRoomWidgetInstance)) return;
+
+	ChatRoomWidgetInstance->NotifyPrivateSystemMessage(Message);
+}
+
 void AGCPlayerController::ClientReceivePrivateTurnResult_Implementation(const FString& ResultText)
 {
 	if (!IsValid(GameOverlayWidgetInstance)) return;

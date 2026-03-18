@@ -25,6 +25,8 @@ protected:
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_RefreshChatMessages(const TArray<FChatMessageData>& InMessages);
+
+	void NotifyPrivateSystemMessage(const FString& Message);
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_UpdateRoomStatusText(const FString& InStatusText);
@@ -54,5 +56,7 @@ protected:
 	
 protected:
 	int32 CachedChatMessageCount = INDEX_NONE;
+	int32 CachedPrivateSystemMessageCount = 0;
 	FString CachedRoomStatusText; 
+	TArray<FChatMessageData> LocalPrivateSystemMessages;
 };
