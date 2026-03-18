@@ -66,6 +66,11 @@ protected:
 	
 	void SyncGameState();
 	
+private:
+	TArray<EWordleLetterState> JudgeWordleStates(const FString& Answer, const FString& Guess) const;
+	FString MakeWordlePrivateResultText(const TArray<EWordleLetterState>& States) const;
+	FString MakeWordlePublicSummary(const FString& PlayerName, const TArray<EWordleLetterState>& States) const;
+	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Wordle|Data")
 	FString AnswerWordsJsonRelativePath;
