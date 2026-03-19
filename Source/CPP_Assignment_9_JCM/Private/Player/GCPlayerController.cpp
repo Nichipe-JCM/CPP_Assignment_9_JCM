@@ -178,4 +178,4 @@ void AGCPlayerController::ClientResetPrivateGameRecords_Implementation()
 	{
 		GameOverlayWidgetInstance->ResetPrivateGameRecords();
 	}
-}0
+}
