@@ -49,6 +49,9 @@ public:
 	
 	UFUNCTION(Client, Reliable)
 	void ClientNotifyTurnTimedOut();
+
+	UFUNCTION(Client, Reliable)
+	void ClientResetPrivateGameRecords();
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")

@@ -24,6 +24,7 @@ public:
 	void NotifyTurnStarted(float InTurnTimeLimit);
 	void NotifyTurnEnded();
 	void NotifyTurnTimedOut();
+	void ResetPrivateGameRecords();
 
 protected:
 	void RefreshFromGameState();

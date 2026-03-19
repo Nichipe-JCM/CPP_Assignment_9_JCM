@@ -103,6 +103,20 @@ void UGCGameOverlayWidgetBase::NotifyTurnTimedOut()
 	AppendPrivateResultText(TEXT("시간 초과"));
 }
 
+void UGCGameOverlayWidgetBase::ResetPrivateGameRecords()
+{
+	bTurnCountdownActive = false;
+	LocalTurnRemainingTime = 0.0f;
+
+	if (IsValid(TurnStateText))
+	{
+		TurnStateText->SetText(FText::FromString(TEXT("Turn State : Idle")));
+	}
+
+	UpdateTurnTimerText();
+	ClearPrivateResultText();
+}
+
 void UGCGameOverlayWidgetBase::RefreshFromGameState()
 {
 	AGCGameState* GCGS = GetWorld() ? GetWorld()->GetGameState<AGCGameState>() : nullptr;

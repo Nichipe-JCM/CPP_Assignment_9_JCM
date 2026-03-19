@@ -297,6 +297,15 @@ void AGCGameMode::ProcessNormalChat(AGCPlayerController* SenderPC, const FString
 	
 	if (!SenderPS->CanSendNormalChat())
 	{
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("[ProcessNormalChat] Normal chat blocked. Player=%s, Phase=%d, IsParticipant=%d, CanSendNormalChat=%d"),
+			*SenderPS->GetChatNickname(),
+			static_cast<int32>(GCGameState->GetCurrentRoomPhase()),
+			SenderPS->IsMinigameParticipant() ? 1 : 0,
+			SenderPS->CanSendNormalChat() ? 1 : 0
+		);
 		SenderPC->ClientReceivePrivateTurnResult(TEXT("지금은 일반 채팅을 보낼 수 없습니다."));
 		return;
 	}
@@ -337,6 +346,7 @@ void AGCGameMode::ResetRoomState()
 	GameSelectionStarter = nullptr;
 	
 	ClearParticipants();
+	ResetAllPlayersPrivateGameRecords();
 	
 	AGCGameState* GCGameState = GetGameState<AGCGameState>();
 	if (!IsValid(GCGameState)) return;
@@ -472,14 +482,60 @@ bool AGCGameMode::IsParticipant(const AGCPlayerState* InPlayerState) const
 
 void AGCGameMode::ClearParticipants()
 {
+	ResetAllPlayerMiniGameStates();
+	ActiveParticipants.Empty();
+	SyncGameState();
+}
+
+void AGCGameMode::ResetAllPlayerMiniGameStates()
+	{
+	const AGCGameState* GCGameState = GetGameState<AGCGameState>();
+	if (IsValid(GCGameState))
+	{
+		for (APlayerState* PlayerStateBase : GCGameState->PlayerArray)
+		{
+			AGCPlayerState* PlayerState = Cast<AGCPlayerState>(PlayerStateBase);
+			if (!IsValid(PlayerState))
+			{
+				continue;
+			}
+
+			PlayerState->ResetMiniGamePlayerState();
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("[ResetRoomState] Reset minigame flags for %d player states."), GCGameState->PlayerArray.Num());
+		return;
+	}
+
 	for (AGCPlayerState* Participant : ActiveParticipants)
 	{
-		if (!IsValid(Participant)) continue;
+		if (!IsValid(Participant))
+		{
+			continue;
+		}
 
 		Participant->ResetMiniGamePlayerState();
 	}
+}
 
-	ActiveParticipants.Empty();
+void AGCGameMode::ResetAllPlayersPrivateGameRecords() const
+{
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		return;
+	}
+
+	for (FConstPlayerControllerIterator Iterator = World->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		AGCPlayerController* GCPlayerController = Cast<AGCPlayerController>(Iterator->Get());
+		if (!IsValid(GCPlayerController))
+		{
+			continue;
+		}
+
+		GCPlayerController->ClientResetPrivateGameRecords();
+	}
 }
 
 void AGCGameMode::StartMiniGame()

@@ -67,6 +67,8 @@ protected:
 	void ResolveNumberBaseballTurn(AGCPlayerController* SenderPC, const FString& GuessNumberString);
 	
 	void SyncGameState();
+	void ResetAllPlayerMiniGameStates();
+	void ResetAllPlayersPrivateGameRecords() const;
 	
 private:
 	bool IsNicknameAlreadyInUse(const FString& Nickname, const AGCPlayerState* RequestPlayerState = nullptr) const;

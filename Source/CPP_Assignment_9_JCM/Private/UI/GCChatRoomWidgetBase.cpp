@@ -71,6 +71,14 @@ void UGCChatRoomWidgetBase::NotifyPrivateSystemMessage(const FString& Message)
 	RefreshFromGameState();
 }
 
+void UGCChatRoomWidgetBase::ResetPrivateSystemMessages()
+{
+	LocalPrivateSystemMessages.Empty();
+	LocalPrivateSystemMessageAnchors.Empty();
+	CachedPrivateSystemMessageCount = INDEX_NONE;
+	RefreshFromGameState();
+}
+
 void UGCChatRoomWidgetBase::RefreshFromGameState()
 {
 	AGCGameState* GCGS = GetWorld() ? GetWorld()->GetGameState<AGCGameState>() : nullptr;

@@ -27,6 +27,7 @@ public:
 	void BP_RefreshChatMessages(const TArray<FChatMessageData>& InMessages);
 
 	void NotifyPrivateSystemMessage(const FString& Message);
+	void ResetPrivateSystemMessages();
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_UpdateRoomStatusText(const FString& InStatusText);

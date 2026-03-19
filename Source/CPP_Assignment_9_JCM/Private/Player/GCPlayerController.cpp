@@ -166,3 +166,16 @@ void AGCPlayerController::ClientNotifyTurnTimedOut_Implementation()
 	
 	GameOverlayWidgetInstance->NotifyTurnTimedOut();
 }
+
+void AGCPlayerController::ClientResetPrivateGameRecords_Implementation()
+{
+	if (IsValid(ChatRoomWidgetInstance))
+	{
+		ChatRoomWidgetInstance->ResetPrivateSystemMessages();
+	}
+
+	if (IsValid(GameOverlayWidgetInstance))
+	{
+		GameOverlayWidgetInstance->ResetPrivateGameRecords();
+	}
+}0
